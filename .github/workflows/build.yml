@@ -1,83 +1,87 @@
-name: Build and Release
+name: Build
 
 on:
-  push:
-    tags:
-      - 'v*'
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64]
-    steps:
-      - uses: actions/checkout@v2
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                goos: [linux, windows, darwin]
+                goarch: [amd64]
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.21
+            - name: Set up Go
+              uses: actions/setup-go@v2
+              with:
+                  go-version: 1.21
 
-      - name: Build
-        run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/discord-tmdb-bot-${{ matrix.goos }}-${{ matrix.goarch }} .
+            - name: Build
+              run: |
+                  GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/discord-tmdb-bot-${{ matrix.goos }}-${{ matrix.goarch }} .
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: discord-tmdb-bot-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: bin/discord-tmdb-bot-${{ matrix.goos }}-${{ matrix.goarch }}
+            - name: Upload binaries
+              uses: actions/upload-artifact@v2
+              with:
+                  name: discord-tmdb-bot-${{ matrix.goos }}-${{ matrix.goarch }}
+                  path: bin/discord-tmdb-bot-${{ matrix.goos }}-${{ matrix.goarch }}
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+    release:
+        needs: build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Download binaries
-        uses: actions/download-artifact@v2
-        with:
-          path: bin
+            - name: Download binaries
+              uses: actions/download-artifact@v2
+              with:
+                  path: bin
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: v${{ github.sha }}
+                  release_name: Build ${{ github.sha }}
+                  draft: false
+                  prerelease: true
 
-      - name: Upload Release Assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/discord-tmdb-bot-linux-amd64/discord-tmdb-bot-linux-amd64
-          asset_name: discord-tmdb-bot-linux-amd64
-          asset_content_type: application/octet-stream
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/discord-tmdb-bot-linux-amd64/discord-tmdb-bot-linux-amd64
+                  asset_name: discord-tmdb-bot-linux-amd64
+                  asset_content_type: application/octet-stream
 
-      - name: Upload Release Assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/discord-tmdb-bot-windows-amd64/discord-tmdb-bot-windows-amd64.exe
-          asset_name: discord-tmdb-bot-windows-amd64.exe
-          asset_content_type: application/octet-stream
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/discord-tmdb-bot-windows-amd64/discord-tmdb-bot-windows-amd64.exe
+                  asset_name: discord-tmdb-bot-windows-amd64.exe
+                  asset_content_type: application/octet-stream
 
-      - name: Upload Release Assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/discord-tmdb-bot-darwin-amd64/discord-tmdb-bot-darwin-amd64
-          asset_name: discord-tmdb-bot-darwin-amd64
-          asset_content_type: application/octet-stream
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/discord-tmdb-bot-darwin-amd64/discord-tmdb-bot-darwin-amd64
+                  asset_name: discord-tmdb-bot-darwin-amd64
+                  asset_content_type: application/octet-stream
