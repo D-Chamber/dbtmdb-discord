@@ -351,4 +351,8 @@ Per TMDB's attribution requirements, any public-facing use of this bot must incl
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE) for details.
+This project is licensed under the **MIT License (Non-Commercial)** — see [LICENSE](LICENSE) for details.
+
+> **Important:** This software is provided for **non-commercial use only**. Commercial use, including but not limited to selling, licensing, or distributing the software for profit, requires prior written permission from the copyright holder.
+
+The software must comply with the terms of service and usage restrictions of The Movie Database (TMDB) API and any other third-party APIs used by this software.
