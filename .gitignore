@@ -1,0 +1,4 @@
+.env
+bot
+logs/
+*.log
